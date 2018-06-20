@@ -155,3 +155,8 @@ document.getElementsByClassName("delete-obj-btn")[0].addEventListener("click", f
 document.getElementById("serialize-data").addEventListener("click", function(){
     console.log(JSON.stringify(global_canvas));
 })
+
+document.getElementById('canvas-zoom-value').addEventListener("keyup", function(){
+    global_canvas.setZoom(this.value);
+    global_canvas.renderAll();
+});
