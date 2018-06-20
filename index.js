@@ -10,7 +10,7 @@
  */
 
 // GLOBAL VARIABLES
-var global_cavnas;
+var global_canvas;
 var global_target_image;
 var global_started = false;
 var global_x = 0, global_y = 0;
@@ -21,7 +21,7 @@ global_target_image.src = 'potato_kufri_bahar.jpg';
 
 // as soon as the image is loaded, prepare the canvas
 global_target_image.onload = function() {
-    global_cavnas = new fabric.Canvas('my-canvas', {
+    global_canvas = new fabric.Canvas('my-canvas', {
         width: this.naturalWidth,
         height: this.naturalHeight,
         backgroundImage: this.src
@@ -36,8 +36,8 @@ global_target_image.onload = function() {
 
 function addRect(properties) {
     var rect = new fabric.Rect(properties);
-    global_cavnas.add(rect);
-    global_cavnas.setActiveObject(rect);
+    global_canvas.add(rect);
+    global_canvas.setActiveObject(rect);
 }
 
 /**
@@ -46,12 +46,11 @@ function addRect(properties) {
  */
 
 function beginRectDraw(options) {
-    console.dir(options);
     if(options.target != null || options.target != undefined){
         return;
     }
     global_started = true;
-    var mouse = global_cavnas.getPointer();
+    var mouse = global_canvas.getPointer();
     global_x = mouse.x;
     global_y = mouse.y;
     var properties = {
@@ -81,16 +80,16 @@ function drawRect(options){
         return;
     }
 
-    var mouse = global_cavnas.getPointer();
+    var mouse = global_canvas.getPointer();
     var x = Math.min(mouse.x,  global_x);
     var y = Math.min(mouse.y,  global_y);
     var w = Math.abs(mouse.x - global_x);
     var h = Math.abs(mouse.y - global_y);
 
-    var square = global_cavnas.getActiveObject();
+    var square = global_canvas.getActiveObject();
     square.set('top', y).set('left', x).set('width', w).set('height', h); 
     square.setCoords();
-    global_cavnas.renderAll();
+    global_canvas.renderAll();
 }
 
 /**
@@ -103,24 +102,42 @@ function finishRect() {
     }
 }
 
+function showDeleteBtn(options) {
+    var deleteBtn = document.getElementsByClassName('delete-obj-btn')[0];
+    var selected = global_canvas.getActiveObject();
+    deleteBtn.style.display = 'block';
+    deleteBtn.style.top = selected.top + 10 + 'px';
+    deleteBtn.style.left = selected.left + 10 + 'px';
+}
+
+function hideDeleteBtn(options) {
+    var deleteBtn = document.getElementsByClassName('delete-obj-btn')[0];
+    deleteBtn.style.display = 'none';
+}
+
 // event listeners for canvas
 function addEventHandlers() {
-    global_cavnas.on('mouse:down', function(options){ beginRectDraw(options) });
-    global_cavnas.on('mouse:up', function(options){ finishRect(options) });
-    global_cavnas.on('mouse:move', function(options){ drawRect(options) });
+    global_canvas.on('mouse:down', function(options){ beginRectDraw(options) });
+    global_canvas.on('mouse:up', function(options){ finishRect(options) });
+    global_canvas.on('mouse:move', function(options){ drawRect(options) });
+    global_canvas.on('object:selected', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:modified', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:moving', function(options){ showDeleteBtn(options) } );
 }
 
 document.getElementById("obj-count").addEventListener("click", function(){
-    console.log(global_cavnas.getObjects());
+    console.log(global_canvas.getObjects());
 })
 
 document.getElementById("obj-delete").addEventListener("click", function(){
-    var allObjects = global_cavnas.getObjects();
+    var allObjects = global_canvas.getObjects();
     while(allObjects.length != 0){
-        global_cavnas.remove(allObjects[0]);
+        global_canvas.remove(allObjects[0]);
     }
+    hideDeleteBtn();
 })
 
-document.getElementById("obj-delete-selected").addEventListener("click", function(){
-    global_cavnas.remove(global_cavnas.getActiveObject());
+document.getElementsByClassName("delete-obj-btn")[0].addEventListener("click", function(){
+    global_canvas.remove(global_canvas.getActiveObject());
+    hideDeleteBtn();
 })

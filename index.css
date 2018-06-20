@@ -7,6 +7,26 @@ html,body {
     padding: 0;
 }
 
+div {
+    position: relative;
+}
+
 .canvas-container {
     margin-top: 80px;
+}
+
+.delete-obj-btn {
+    position: absolute;
+    display: none;
+    padding-top: 3px;
+    top: 20px;
+    left: 20px;
+    cursor: pointer;
+    background: white;
+    border-radius: 4px;
+}
+
+.delete-obj-btn img {
+    width: 25px;
+    height: 25px;
 }
