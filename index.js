@@ -17,7 +17,7 @@ var global_x = 0, global_y = 0;
 
 // set the target image
 global_target_image = new Image();
-global_target_image.src = 'potato_kufri_bahar.jpg';
+global_target_image.src = 'potato_kufri_bahar_2.jpeg';
 
 // as soon as the image is loaded, prepare the canvas
 global_target_image.onload = function() {
@@ -123,6 +123,8 @@ function addEventHandlers() {
     global_canvas.on('object:selected', function(options){ showDeleteBtn(options) } );
     global_canvas.on('object:modified', function(options){ showDeleteBtn(options) } );
     global_canvas.on('object:moving', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:scaling', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:rotated', function(options){ showDeleteBtn(options) } );
 }
 
 document.getElementById("obj-count").addEventListener("click", function(){
