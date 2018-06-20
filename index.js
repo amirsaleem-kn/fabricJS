@@ -15,18 +15,26 @@ var global_target_image;
 var global_started = false;
 var global_x = 0, global_y = 0;
 
-// set the target image
-global_target_image = new Image();
-global_target_image.src = 'potato_kufri_bahar_2.jpeg';
+function getQueryString(key){
+    return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+}
 
-// as soon as the image is loaded, prepare the canvas
-global_target_image.onload = function() {
-    global_canvas = new fabric.Canvas('my-canvas', {
-        width: this.naturalWidth,
-        height: this.naturalHeight,
-        backgroundImage: this.src
-    });
-    addEventHandlers();
+prepareCanvas();
+
+function prepareCanvas() {
+    // set the target image
+    global_target_image = new Image();
+    global_target_image.src = 'potato_kufri_bahar_2.jpeg';
+
+    // as soon as the image is loaded, prepare the canvas
+    global_target_image.onload = function() {
+        global_canvas = new fabric.Canvas('my-canvas', {
+            width: this.naturalWidth,
+            height: this.naturalHeight,
+            backgroundImage: this.src
+        });
+        addEventHandlers();
+    }
 }
 
 /**
@@ -142,4 +150,8 @@ document.getElementById("obj-delete").addEventListener("click", function(){
 document.getElementsByClassName("delete-obj-btn")[0].addEventListener("click", function(){
     global_canvas.remove(global_canvas.getActiveObject());
     hideDeleteBtn();
+})
+
+document.getElementById("serialize-data").addEventListener("click", function(){
+    console.log(JSON.stringify(global_canvas));
 })
