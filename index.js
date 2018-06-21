@@ -137,7 +137,33 @@ function addEventHandlers() {
 
 document.getElementById("obj-count").addEventListener("click", function(){
     console.log(global_canvas.getObjects());
-})
+});
+
+document.getElementById("clone-obj").addEventListener("click", function(){
+    var selectedObj = global_canvas.getActiveObject();
+    var coords = {
+        x1: selectedObj.aCoords.tl.x,
+        x2: selectedObj.aCoords.tr.x,
+        x3: selectedObj.aCoords.br.x,
+        x4: selectedObj.aCoords.bl.x,
+        y1: selectedObj.aCoords.tl.y,
+        y2: selectedObj.aCoords.tr.y,
+        y3: selectedObj.aCoords.br.y,
+        y4: selectedObj.aCoords.bl.y
+    }
+    var dimensions = getDimensionsWithAngle(coords);
+    global_canvas.remove(global_canvas.getActiveObject());
+    hideDeleteBtn();
+    addRect({
+        width: dimensions.width,
+        height: dimensions.height,
+        top: dimensions.top,
+        left: dimensions.left,
+        angle: dimensions.angle,
+        stroke: 'orange',
+        fill: null
+    })
+});
 
 document.getElementById("obj-delete").addEventListener("click", function(){
     var allObjects = global_canvas.getObjects();
