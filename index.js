@@ -6,7 +6,15 @@
  *      b) Local variables: camelCase convention.
  *      c) constants: All letters uppercase seperated by underscore
  * 
- * 2) Function Names  
+ * // TODO
+ *  # User should be able to draw a rectangle using mouse drag (Done)
+ *  # User should be able to drag, resize and rotate a rectangle (Done)
+ *  # User should be able to delete single object (Done)
+ *  # User should be able to delete all objects in one click (Done)
+ *  # User should be able to retrieve objects from database (Done)
+ *  # User should be able to analyse the objects based on a reference object
+ *  # User should be able to change the reference object's dimensions in both pixel and mm
+ *  # A quick summary of analysis should be visible to user whenever required.
  */
 
 // GLOBAL VARIABLES
@@ -17,6 +25,10 @@ var global_x = 0, global_y = 0;
 
 function getQueryString(key){
     return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+}
+
+function getPixelValueInMM() {
+    return false;
 }
 
 prepareCanvas();
