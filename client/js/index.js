@@ -15,10 +15,11 @@
  *  # User should be able to analyse the objects based on a reference object
  *  # User should be able to change the reference object's dimensions in both pixel and mm
  *  # A quick summary of analysis should be visible to user whenever required.
- *  # One click 
+ *  # One click should not lead to a box creation
  */
 
 // GLOBAL VARIABLES
+var qs = require('qs');
 var global_canvas;
 var global_target_image;
 var global_started = false;
@@ -26,10 +27,6 @@ var global_x = 0, global_y = 0;
 
 function getQueryString(key){
     return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
-}
-
-function getPixelValueInMM() {
-    return false;
 }
 
 prepareCanvas();
@@ -47,6 +44,7 @@ function prepareCanvas() {
             backgroundImage: this.src
         });
         addEventHandlers();
+        getObjectData();
     }
 }
 
@@ -148,6 +146,108 @@ function addEventHandlers() {
     global_canvas.on('object:rotated', function(options){ showDeleteBtn(options) } );
 }
 
+// method to categorize the objects
+function analyseObjects() {
+
+}
+
+// method to retrive object data
+function getObjectData() {
+    request({
+        method: "get",
+        url: "/fetch/processed-image-object",
+        params: {refID: 100, refTable: 'TestTable'}
+    }).then(function(data){
+        console.log(data);
+        var objectPosition;
+        data.data.forEach(function(anObject, anObjectIndex){
+            objectPosition = anObject.objectPosition;
+            var dimensions = getDimensionsWithAngle({
+                x1: objectPosition[0].x,
+                x2: objectPosition[1].x,
+                x3: objectPosition[2].x,
+                x4: objectPosition[3].x,
+                y1: objectPosition[0].y,
+                y2: objectPosition[1].y,
+                y3: objectPosition[2].y,
+                y4: objectPosition[3].y
+            });
+            dimensions.opacity = 1;
+            dimensions.fill = null;
+            dimensions.stroke = 'rgb(0,255,0)';
+            dimensions.strokeWidth = 2;
+            addRect(dimensions);
+        })
+    })
+}
+
+//method to calculate pixel value in mm
+function getPixelValueInMM() {
+
+}
+
+// method to save data to a server
+function saveObjectData() {
+    var data = {};
+    var objTopLeftX = [], objTopRightX = [], objBottomRightX = [], objBottomLeftX = [];
+    var objTopLeftY = [], objTopRightY = [], objBottomRightY = [], objBottomLeftY = [];
+    // get total number of objects
+    var totalObjects = global_canvas.getObjects().length;
+    var anObject;
+    // loop through the objects and store their coordinates
+    for(var i = 0; i < totalObjects; i++){
+        anObject = global_canvas.getObjects()[i]['aCoords'];
+        objTopLeftX.push(anObject.tl.x);
+        objTopRightX.push(anObject.tr.x);
+        objBottomRightX.push(anObject.br.x);
+        objBottomLeftX.push(anObject.bl.x);
+        objTopLeftY.push(anObject.tl.y);
+        objTopRightY.push(anObject.tr.y);
+        objBottomRightY.push(anObject.br.y);
+        objBottomLeftY.push(anObject.bl.y);
+    };
+    // prepare other required data
+    data.imageWidth = global_canvas.getWidth();
+    data.imageHeight = global_canvas.getHeight();
+    data.numberOfObjects = totalObjects
+    data.empID = 'EI201700050';
+    data.refID = getQueryString('refID');
+    data.refTable = getQueryString('refTable');
+    data.predictedScale = 0.885;
+    data.blackBackground = null;
+    data.referenceObject = null;
+    data.pictureUrl = getQueryString('image');
+    data.typeID = getQueryString('typeID');
+    data.lat = getQueryString('lat');
+    data.lon = getQueryString('lon');
+    data.appID = 8,
+    data.version = '1.1.0',
+    data.code = 0,
+    data.token = 'u23ukjhd0034892kd3',
+    data.originalImage = getQueryString('image');
+    data.method = 'manual',
+    data.lotNo = 143,
+    data.qID = 34,
+    data.mapID = 6,
+    data.topLeftX = objTopLeftX;
+    data.topRightX = objTopRightX;
+    data.bottomRightX = objBottomRightX;
+    data.bottomLeftX = objBottomLeftX;
+    data.topLeftY = objTopLeftY;
+    data.topRightY = objTopRightY;
+    data.bottomRightY = objBottomRightY;
+    data.bottomLeftY = objBottomLeftY;
+    console.log(data);
+    //send the data to a server
+    request({
+        method: "post",
+        url: "/insert/image-object-data", // fetch/processed-image-object
+        data: qs.stringify(data)
+    }).then(function(data) {
+        console.log(data);
+    })
+}
+
 document.getElementById("obj-count").addEventListener("click", function(){
     console.log(global_canvas.getObjects());
 });
@@ -193,12 +293,7 @@ document.getElementsByClassName("delete-obj-btn")[0].addEventListener("click", f
 
 document.getElementById("serialize-data").addEventListener("click", function(){
     console.log(JSON.stringify(global_canvas));
-    request({
-        method: "get",
-        url: "/insert-image-object"
-    }).then(function(data) {
-        console.log(data);
-    })
+    saveObjectData();
 })
 
 document.getElementById('canvas-zoom-value').addEventListener("keyup", function(){
