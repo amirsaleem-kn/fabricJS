@@ -31,6 +31,15 @@ function getQueryString(key){
     return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
 }
 
+// get distance between two points
+function getDistance(x1, y1, x2, y2) {
+    var xs = x2 - x1;
+    var ys = y2 - y1;
+    xs *= xs;
+    ys *= ys;
+    return Math.sqrt(xs + ys);
+  }
+
 prepareCanvas();
 
 function prepareCanvas() {
@@ -83,7 +92,7 @@ function beginRectDraw(options) {
         opacity: 1,
         fill: null,
         stroke: 'rgb(0,255,0)',
-        strokeWidth: 2
+        strokeWidth: 2,
     }
     addRect(properties);
 }
@@ -170,8 +179,8 @@ function analyseObjects() {
         found = false;
         anObject = global_canvas.getObjects()[i];
         // get the minimum of width and height
-        objWidth = anObject.width * getPixelValueInMM();
-        objHeight = anObject.height * getPixelValueInMM();
+        objWidth = (getDistance(anObject['aCoords']['tl']['x'], anObject['aCoords']['tl']['y'], anObject['aCoords']['tr']['x'], anObject['aCoords']['tr']['y'])) * getPixelValueInMM();
+        objHeight = (getDistance(anObject['aCoords']['tr']['x'], anObject['aCoords']['tr']['y'], anObject['aCoords']['br']['x'], anObject['aCoords']['br']['y'])) * getPixelValueInMM();
         objWidth > objHeight ? objectSide = objHeight : objectSide = objWidth;
         // loop through the categoryArray
         for(var j = 0; j < local_category_array.length; j++){
@@ -296,9 +305,9 @@ function getObjectData() {
 
 //method to calculate pixel value in mm
 function getPixelValueInMM() {
-    var refObject = global_canvas.getObjects()[0];
-    var refObjWidthInPx = refObject.width;
-    var refObjHeightInPx = refObject.height;
+    var refObject = global_canvas.getObjects()[0]['aCoords'];
+    var refObjWidthInPx = (getDistance(refObject['tl']['x'], refObject['tl']['y'], refObject['tr']['x'], refObject['tr']['y']));
+    var refObjHeightInPx = (getDistance(refObject['tr']['x'], refObject['tr']['y'], refObject['br']['x'], refObject['br']['y']));
     var refObjWidthInMM = document.getElementById('ref-width').value;
     var refObjHeightInMM = document.getElementById('ref-height').value;
     var pixelValueInMM = (((parseFloat(refObjWidthInMM) + parseFloat(refObjHeightInMM)) / 2) / ((parseFloat(refObjWidthInPx) + parseFloat(refObjHeightInPx)) / 2 )).toFixed(3);
@@ -310,7 +319,8 @@ function saveObjectData() {
     var data = {};
     var objTopLeftX = [], objTopRightX = [], objBottomRightX = [], objBottomLeftX = [];
     var objTopLeftY = [], objTopRightY = [], objBottomRightY = [], objBottomLeftY = [];
-    var objHeight = [], objWidth = [];
+    var objHeight = [], objWidth = [], objWidthNum, objHeightNum;
+    var referenceObject = [];
     // get total number of objects
     var totalObjects = global_canvas.getObjects().length;
     var anObject;
@@ -318,6 +328,8 @@ function saveObjectData() {
     for(var i = 0; i < totalObjects; i++){
         // ignore first object, as first object is always reference object
         if(i == 0){
+            anObject = global_canvas.getObjects()[i]['aCoords'];
+            referenceObject.push(anObject.tl.x, anObject.tl.y, anObject.tr.x, anObject.tr.y, anObject.br.x, anObject.br.y, anObject.bl.x, anObject.bl.y);
             continue;
         }
         anObject = global_canvas.getObjects()[i]['aCoords'];
@@ -329,8 +341,10 @@ function saveObjectData() {
         objTopRightY.push(anObject.tr.y);
         objBottomRightY.push(anObject.br.y);
         objBottomLeftY.push(anObject.bl.y);
-        objHeight.push(global_canvas.getObjects()[i].height * getPixelValueInMM());
-        objWidth.push(global_canvas.getObjects()[i].width * getPixelValueInMM());
+        objWidthNum = (getDistance(anObject['tl']['x'], anObject['tl']['y'], anObject['tr']['x'], anObject['tr']['y'])) * getPixelValueInMM();
+        objHeightNum = (getDistance(anObject['tr']['x'], anObject['tr']['y'], anObject['br']['x'], anObject['br']['y'])) * getPixelValueInMM();
+        objHeight.push(objHeightNum);
+        objWidth.push(objWidthNum);
     };
     // prepare other required data
     data.imageWidth = global_canvas.getWidth();
@@ -339,9 +353,9 @@ function saveObjectData() {
     data.empID = 'EI201700050';
     data.refID = getQueryString('refID');
     data.refTable = getQueryString('refTable');
-    data.predictedScale = 0.885;
+    data.predictedScale = getPixelValueInMM();
     data.blackBackground = null;
-    data.referenceObject = null;
+    data.referenceObject = referenceObject
     data.pictureUrl = getQueryString('image');
     data.typeID = getQueryString('typeID');
     data.lat = getQueryString('lat');
@@ -377,7 +391,7 @@ function saveObjectData() {
 }
 
 document.getElementById("obj-count").addEventListener("click", function(){
-    console.log(global_canvas.getObjects());
+    console.log(global_canvas.getObjects() - 1);
 });
 
 document.getElementById("clone-obj").addEventListener("click", function(){
@@ -427,3 +441,7 @@ document.getElementById("serialize-data").addEventListener("click", function(){
 document.getElementById('save-ref-dimension').addEventListener("click", function(){
     analyseObjects();
 });
+
+document.getElementById('get-ref-details').addEventListener("click", function(){
+    analyseObjects();
+})
