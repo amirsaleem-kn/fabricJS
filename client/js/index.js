@@ -13,10 +13,13 @@
  *  # User should be able to delete all objects in one click (Done)
  *  # User should be able to retrieve objects from database (Done)
  *  # User should be able to analyse the objects based on a reference object (Done)
- *  # User should be able to change the reference object's dimensions in both pixel and mm
+ *  # User should be able to change the reference object's dimensions in both pixel and mm (Done)
  *  # A quick summary of analysis should be visible to user whenever required.
  *  # One click should not lead to a box creation
  *  # Retrieval of objects from database (Done)
+ *  # Data verification
+ *  # Disable object grouping
+ *  # Show reference object value in pixel
  */
 
 // GLOBAL VARIABLES
@@ -144,18 +147,6 @@ function showDeleteBtn(options) {
 function hideDeleteBtn(options) {
     var deleteBtn = document.getElementsByClassName('delete-obj-btn')[0];
     deleteBtn.style.display = 'none';
-}
-
-// event listeners for canvas
-function addEventHandlers() {
-    global_canvas.on('mouse:down', function(options){ beginRectDraw(options) });
-    global_canvas.on('mouse:up', function(options){ finishRect(options) });
-    global_canvas.on('mouse:move', function(options){ drawRect(options) });
-    global_canvas.on('object:selected', function(options){ showDeleteBtn(options) } );
-    global_canvas.on('object:modified', function(options){ showDeleteBtn(options) } );
-    global_canvas.on('object:moving', function(options){ showDeleteBtn(options) } );
-    global_canvas.on('object:scaling', function(options){ showDeleteBtn(options) } );
-    global_canvas.on('object:rotated', function(options){ showDeleteBtn(options) } );
 }
 
 // method to categorize the objects
@@ -390,35 +381,17 @@ function saveObjectData() {
     })
 }
 
-document.getElementById("obj-count").addEventListener("click", function(){
-    console.log(global_canvas.getObjects() - 1);
-});
-
-document.getElementById("clone-obj").addEventListener("click", function(){
-    var selectedObj = global_canvas.getActiveObject();
-    var coords = {
-        x1: selectedObj.aCoords.tl.x,
-        x2: selectedObj.aCoords.tr.x,
-        x3: selectedObj.aCoords.br.x,
-        x4: selectedObj.aCoords.bl.x,
-        y1: selectedObj.aCoords.tl.y,
-        y2: selectedObj.aCoords.tr.y,
-        y3: selectedObj.aCoords.br.y,
-        y4: selectedObj.aCoords.bl.y
-    }
-    var dimensions = getDimensionsWithAngle(coords);
-    global_canvas.remove(global_canvas.getActiveObject());
-    hideDeleteBtn();
-    addRect({
-        width: dimensions.width,
-        height: dimensions.height,
-        top: dimensions.top,
-        left: dimensions.left,
-        angle: dimensions.angle,
-        stroke: 'orange',
-        fill: null
-    })
-});
+// event listeners for canvas
+function addEventHandlers() {
+    global_canvas.on('mouse:down', function(options){ beginRectDraw(options) });
+    global_canvas.on('mouse:up', function(options){ finishRect(options) });
+    global_canvas.on('mouse:move', function(options){ drawRect(options) });
+    global_canvas.on('object:selected', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:modified', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:moving', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:scaling', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:rotated', function(options){ showDeleteBtn(options) } );
+}
 
 document.getElementById("obj-delete").addEventListener("click", function(){
     var allObjects = global_canvas.getObjects();
@@ -431,17 +404,21 @@ document.getElementById("obj-delete").addEventListener("click", function(){
 document.getElementsByClassName("delete-obj-btn")[0].addEventListener("click", function(){
     global_canvas.remove(global_canvas.getActiveObject());
     hideDeleteBtn();
-})
+});
 
 document.getElementById("serialize-data").addEventListener("click", function(){
     console.log(JSON.stringify(global_canvas));
     saveObjectData();
-})
+});
 
 document.getElementById('save-ref-dimension').addEventListener("click", function(){
     analyseObjects();
 });
 
-document.getElementById('get-ref-details').addEventListener("click", function(){
+document.getElementById('ref-width').addEventListener('keyup', function(){
     analyseObjects();
-})
+});
+
+document.getElementById('ref-height').addEventListener('keyup', function(){
+    analyseObjects();    
+});
