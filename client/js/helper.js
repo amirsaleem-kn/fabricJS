@@ -54,3 +54,34 @@ function getDistance(x1, y1, x2, y2) {
     ys *= ys;
     return Math.sqrt(xs + ys);
 }
+
+// returns canvas data in base64 format
+function generateCanvasImage(canvas) {
+    var imageOnly = canvas.toDataURL({format: 'png',multiplier: 4});
+    return imageOnly;
+}
+
+// method to convert base64 image to blob
+function dataURLtoBlob(dataurl) {
+    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type:mime});
+}
+
+// method to upload canvas generated image to google cloud
+function getPublicUrl() {
+    return new Promise(function(resolve, reject){
+      var imgData = generateCanvasImage(canvas)
+      var strDataURI = imgData.substr(22, imgData.length);
+      var blob = dataURLtoBlob(imgData);
+      var objurl = URL.createObjectURL(blob);
+      var formData = new FormData();
+      formData.append("tag","editedImages");
+      formData.append("empID",localStorage.empID);
+      formData.append("filename",blob,'file.png');
+      resolve(formData);
+    });
+  }
