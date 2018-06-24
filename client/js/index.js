@@ -16,6 +16,7 @@
  *  # User should be able to change the reference object's dimensions in both pixel and mm
  *  # A quick summary of analysis should be visible to user whenever required.
  *  # One click should not lead to a box creation
+ *  # Retrieval of objects from database (Done)
  */
 
 // GLOBAL VARIABLES
@@ -24,6 +25,7 @@ var global_canvas;
 var global_target_image;
 var global_started = false;
 var global_x = 0, global_y = 0;
+var global_category_array = [];
 
 function getQueryString(key){
     return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
@@ -57,6 +59,7 @@ function addRect(properties) {
     var rect = new fabric.Rect(properties);
     global_canvas.add(rect);
     global_canvas.setActiveObject(rect);
+    //analyseObjects();
 }
 
 /**
@@ -148,18 +151,122 @@ function addEventHandlers() {
 
 // method to categorize the objects
 function analyseObjects() {
-
+    var local_category_array = [];
+    var totalSum = 0;
+    // create a copy of global_category_array
+    global_category_array.forEach(function(aCategory){
+        local_category_array.push(Object.assign({}, aCategory));
+    });
+    var totalObjects = global_canvas.getObjects().length;
+    var anObject, objectSide, found = false;
+    var objWidth, objHeight;
+    // loop through the objects array
+    for(var i = 0; i < totalObjects; i++) {
+        found = false;
+        anObject = global_canvas.getObjects()[i];
+        // get the minimum of width and height
+        objWidth = anObject.width * getPixelValueInMM();
+        objHeight = anObject.height * getPixelValueInMM();
+        objWidth > objHeight ? objectSide = objHeight : objectSide = objWidth;
+        // loop through the categoryArray
+        for(var j = 0; j < local_category_array.length; j++){
+            // if minium of width or height of an object falls under the selected category
+            if(objectSide >= local_category_array[j]['minSize'] && objectSide < local_category_array[j]['maxSize']) {
+                // add side to the sum, this helps in weight calculation
+                totalSum += objectSide;
+                // increment the count for selected category
+                local_category_array[j]['count'] += 1;
+                // increase the sum in categoryArray
+                if(local_category_array[j].hasOwnProperty('sum')){
+                    local_category_array[j]['sum'] += 1; 
+                } else {
+                    local_category_array[j]['sum'] = 0;
+                }
+                // set flag to true
+                found = true;
+                // break the loop
+                break;
+            }
+        }
+        // if object did not fall in any category criteria
+        if(!found){
+            // add it to the super category
+            totalSum += objectSide;
+            local_category_array[4]['count'] += 1;
+            if(local_category_array[4].hasOwnProperty('sum')){
+                local_category_array[4]['sum'] += 1; 
+            } else {
+                local_category_array[4]['sum'] = 0;
+            }
+        }
+    }
+    // update the countInPercentage and weightInPercentage for category array
+    local_category_array.forEach(function(aCategory, aCategoryIndex){
+        aCategory['countInPercentage'] = (parseFloat(aCategory['count']*100)/totalObjects);
+        if(Math.round(aCategory['countInPercentage']) !== aCategory['countInPercentage']){
+            aCategory['countInPercentage'] = (aCategory['countInPercentage']).toFixed(2);
+        }
+        if(isNaN(aCategory['percentage'])){
+            aCategory['percentage'] = 0;
+        }
+        aCategory['sumInPercentage'] = ( parseFloat(aCategory['sum']*100 / parseFloat(totalSum)) )
+        if(Math.round(aCategory['sumInPercentage']) !== aCategory['sumInPercentage']){
+            aCategory['sumInPercentage'] = (aCategory['sumInPercentage']).toFixed(2);
+        }
+        if(isNaN(aCategory['sumInPercentage'])){
+            aCategory['sumInPercentage'] = 0;
+        }
+    });
+    console.log(local_category_array);
 }
 
 // method to retrive object data
 function getObjectData() {
+    // call fetch api to get object data
     request({
         method: "get",
         url: "/fetch/processed-image-object",
         params: {refID: 100, refTable: 'TestTable'}
     }).then(function(data){
-        console.log(data);
-        var objectPosition;
+        var objectPosition, objectSide;
+        global_category_array = data.helper.categoryArray;
+        var pixelValueInMM = data.helper.pixelValueInMM || 0.885;
+        // create a referenceObject
+        if(data.helper.referenceObject == null){
+            var refDimensions = {};
+            refDimensions.width = 196;
+            refDimensions.height = 196;
+            refDimensions.top = global_canvas.getHeight() - 196;
+            refDimensions.left = global_canvas.getWidth() - 196;
+            refDimensions.opacity = 1;
+            refDimensions.fill = null;
+            refDimensions.stroke = 'orange';
+            refDimensions.strokeWidth = 2;
+            document.getElementById('ref-width').value = (refDimensions.width * pixelValueInMM);
+            document.getElementById('ref-height').value = (refDimensions.height * pixelValueInMM);
+            addRect(refDimensions);
+        } else {
+            var referenceObject = data.helper.referenceObject;
+            var refDimensions = getDimensionsWithAngle({
+                x1: referenceObject[0].x,
+                x2: referenceObject[1].x,
+                x3: referenceObject[2].x,
+                x4: referenceObject[3].x,
+                y1: referenceObject[0].y,
+                y2: referenceObject[1].y,
+                y3: referenceObject[2].y,
+                y4: referenceObject[3].y
+            });
+            refDimensions.opacity = 1;
+            refDimensions.fill = null;
+            refDimensions.stroke = 'orange';
+            refDimensions.strokeWidth = 2;
+            document.getElementById('ref-width').value = (refDimensions.width * pixelValueInMM);
+            document.getElementById('ref-height').value = (refDimensions.height * pixelValueInMM);
+            addRect(refDimensions);
+        }
+
+        // loop through the objects and render each
         data.data.forEach(function(anObject, anObjectIndex){
             objectPosition = anObject.objectPosition;
             var dimensions = getDimensionsWithAngle({
@@ -177,13 +284,20 @@ function getObjectData() {
             dimensions.stroke = 'rgb(0,255,0)';
             dimensions.strokeWidth = 2;
             addRect(dimensions);
-        })
-    })
+        });
+        analyseObjects();
+    });
 }
 
 //method to calculate pixel value in mm
 function getPixelValueInMM() {
-
+    var refObject = global_canvas.getObjects()[0];
+    var refObjWidthInPx = refObject.width;
+    var refObjHeightInPx = refObject.height;
+    var refObjWidthInMM = document.getElementById('ref-width').value;
+    var refObjHeightInMM = document.getElementById('ref-height').value;
+    var pixelValueInMM = (((parseFloat(refObjWidthInMM) + parseFloat(refObjHeightInMM)) / 2) / ((parseFloat(refObjWidthInPx) + parseFloat(refObjHeightInPx)) / 2 )).toFixed(3);
+    return pixelValueInMM;
 }
 
 // method to save data to a server
@@ -191,6 +305,7 @@ function saveObjectData() {
     var data = {};
     var objTopLeftX = [], objTopRightX = [], objBottomRightX = [], objBottomLeftX = [];
     var objTopLeftY = [], objTopRightY = [], objBottomRightY = [], objBottomLeftY = [];
+    var objHeight = [], objWidth = [];
     // get total number of objects
     var totalObjects = global_canvas.getObjects().length;
     var anObject;
@@ -205,6 +320,8 @@ function saveObjectData() {
         objTopRightY.push(anObject.tr.y);
         objBottomRightY.push(anObject.br.y);
         objBottomLeftY.push(anObject.bl.y);
+        objHeight.push(global_canvas.getObjects()[i].height * getPixelValueInMM);
+        objWidth.push(global_canvas.getObjects()[i].width * getPixelValueInMM);
     };
     // prepare other required data
     data.imageWidth = global_canvas.getWidth();
@@ -220,15 +337,17 @@ function saveObjectData() {
     data.typeID = getQueryString('typeID');
     data.lat = getQueryString('lat');
     data.lon = getQueryString('lon');
-    data.appID = 8,
-    data.version = '1.1.0',
-    data.code = 0,
-    data.token = 'u23ukjhd0034892kd3',
+    data.appID = 8;
+    data.version = '1.1.0';
+    data.code = 0;
+    data.token = 'u23ukjhd0034892kd3';
     data.originalImage = getQueryString('image');
-    data.method = 'manual',
-    data.lotNo = 143,
-    data.qID = 34,
-    data.mapID = 6,
+    data.method = 'manual';
+    data.lotNo = 143;
+    data.qID = 34;
+    data.mapID = 6;
+    data.objectHeight = objHeight;
+    data.objectWidth = objWidth;
     data.topLeftX = objTopLeftX;
     data.topRightX = objTopRightX;
     data.bottomRightX = objBottomRightX;
@@ -295,8 +414,3 @@ document.getElementById("serialize-data").addEventListener("click", function(){
     console.log(JSON.stringify(global_canvas));
     saveObjectData();
 })
-
-document.getElementById('canvas-zoom-value').addEventListener("keyup", function(){
-    global_canvas.setZoom(this.value);
-    global_canvas.renderAll();
-});
