@@ -1,0 +1,25 @@
+{
+  "name": "fabric",
+  "version": "1.0.0",
+  "description": "Exploring possibilities in farbric js",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amirsaleem-kn/fabricJS.git"
+  },
+  "keywords": [
+    "fabric",
+    "canvas",
+    "image-editor",
+    "api"
+  ],
+  "author": "Amir Saleem",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amirsaleem-kn/fabricJS/issues"
+  },
+  "homepage": "https://github.com/amirsaleem-kn/fabricJS#readme"
+}

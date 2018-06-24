@@ -15,6 +15,7 @@
  *  # User should be able to analyse the objects based on a reference object
  *  # User should be able to change the reference object's dimensions in both pixel and mm
  *  # A quick summary of analysis should be visible to user whenever required.
+ *  # One click 
  */
 
 // GLOBAL VARIABLES
