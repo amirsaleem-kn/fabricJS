@@ -193,6 +193,12 @@ document.getElementsByClassName("delete-obj-btn")[0].addEventListener("click", f
 
 document.getElementById("serialize-data").addEventListener("click", function(){
     console.log(JSON.stringify(global_canvas));
+    request({
+        method: "get",
+        url: "/insert-image-object"
+    }).then(function(data) {
+        console.log(data);
+    })
 })
 
 document.getElementById('canvas-zoom-value').addEventListener("keyup", function(){
