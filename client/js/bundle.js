@@ -13,7 +13,7 @@
  *  # User should be able to delete single object (Done)
  *  # User should be able to delete all objects in one click (Done)
  *  # User should be able to retrieve objects from database (Done)
- *  # User should be able to analyse the objects based on a reference object
+ *  # User should be able to analyse the objects based on a reference object (Done)
  *  # User should be able to change the reference object's dimensions in both pixel and mm
  *  # A quick summary of analysis should be visible to user whenever required.
  *  # One click should not lead to a box creation
@@ -163,6 +163,11 @@ function analyseObjects() {
     var objWidth, objHeight;
     // loop through the objects array
     for(var i = 0; i < totalObjects; i++) {
+        // ignoring first object
+        // as first object is reference object
+        if(i == 0){
+            continue;
+        }
         found = false;
         anObject = global_canvas.getObjects()[i];
         // get the minimum of width and height
@@ -203,7 +208,7 @@ function analyseObjects() {
     }
     // update the countInPercentage and weightInPercentage for category array
     local_category_array.forEach(function(aCategory, aCategoryIndex){
-        aCategory['countInPercentage'] = (parseFloat(aCategory['count']*100)/totalObjects);
+        aCategory['countInPercentage'] = (parseFloat(aCategory['count']*100)/totalObjects-1);
         if(Math.round(aCategory['countInPercentage']) !== aCategory['countInPercentage']){
             aCategory['countInPercentage'] = (aCategory['countInPercentage']).toFixed(2);
         }
@@ -312,6 +317,10 @@ function saveObjectData() {
     var anObject;
     // loop through the objects and store their coordinates
     for(var i = 0; i < totalObjects; i++){
+        // ignore first object, as first object is always reference object
+        if(i == 0){
+            continue;
+        }
         anObject = global_canvas.getObjects()[i]['aCoords'];
         objTopLeftX.push(anObject.tl.x);
         objTopRightX.push(anObject.tr.x);
@@ -321,13 +330,13 @@ function saveObjectData() {
         objTopRightY.push(anObject.tr.y);
         objBottomRightY.push(anObject.br.y);
         objBottomLeftY.push(anObject.bl.y);
-        objHeight.push(global_canvas.getObjects()[i].height * getPixelValueInMM);
-        objWidth.push(global_canvas.getObjects()[i].width * getPixelValueInMM);
+        objHeight.push(global_canvas.getObjects()[i].height * getPixelValueInMM());
+        objWidth.push(global_canvas.getObjects()[i].width * getPixelValueInMM());
     };
     // prepare other required data
     data.imageWidth = global_canvas.getWidth();
     data.imageHeight = global_canvas.getHeight();
-    data.numberOfObjects = totalObjects
+    data.numberOfObjects = totalObjects - 1;
     data.empID = 'EI201700050';
     data.refID = getQueryString('refID');
     data.refTable = getQueryString('refTable');
@@ -415,6 +424,10 @@ document.getElementById("serialize-data").addEventListener("click", function(){
     console.log(JSON.stringify(global_canvas));
     saveObjectData();
 })
+
+document.getElementById('save-ref-dimension').addEventListener("click", function(){
+    analyseObjects();
+});
 },{"qs":3}],2:[function(require,module,exports){
 'use strict';
 
