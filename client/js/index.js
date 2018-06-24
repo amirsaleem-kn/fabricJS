@@ -380,32 +380,33 @@ function addEventHandlers() {
     global_canvas.on('object:rotated', function(options){ showDeleteBtn(options) } );
 }
 
+// event listener to delete all objects on the screen except reference object
 document.getElementById("obj-delete").addEventListener("click", function(){
     var allObjects = global_canvas.getObjects();
-    while(allObjects.length != 0){
-        global_canvas.remove(allObjects[0]);
+    while(allObjects.length != 1){
+        global_canvas.remove(allObjects[1]);
     }
     hideDeleteBtn();
 })
 
+// event listener to delete a selected object
 document.getElementsByClassName("delete-obj-btn")[0].addEventListener("click", function(){
     global_canvas.remove(global_canvas.getActiveObject());
     hideDeleteBtn();
 });
 
+// event listener to save data to database
 document.getElementById("serialize-data").addEventListener("click", function(){
     console.log(JSON.stringify(global_canvas));
     saveObjectData();
 });
 
-document.getElementById('save-ref-dimension').addEventListener("click", function(){
-    analyseObjects();
-});
-
+// event listener to update object data when reference object width in mm is changed
 document.getElementById('ref-width').addEventListener('keyup', function(){
     analyseObjects();
 });
 
+// event listener to update object data when reference object height in mm is changed
 document.getElementById('ref-height').addEventListener('keyup', function(){
     analyseObjects();    
 });

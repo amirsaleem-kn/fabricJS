@@ -14,10 +14,13 @@
  *  # User should be able to delete all objects in one click (Done)
  *  # User should be able to retrieve objects from database (Done)
  *  # User should be able to analyse the objects based on a reference object (Done)
- *  # User should be able to change the reference object's dimensions in both pixel and mm
+ *  # User should be able to change the reference object's dimensions in both pixel and mm (Done)
  *  # A quick summary of analysis should be visible to user whenever required.
  *  # One click should not lead to a box creation
  *  # Retrieval of objects from database (Done)
+ *  # Data verification
+ *  # Disable object grouping
+ *  # Show reference object value in pixel
  */
 
 // GLOBAL VARIABLES
@@ -27,19 +30,6 @@ var global_target_image;
 var global_started = false;
 var global_x = 0, global_y = 0;
 var global_category_array = [];
-
-function getQueryString(key){
-    return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
-}
-
-// get distance between two points
-function getDistance(x1, y1, x2, y2) {
-    var xs = x2 - x1;
-    var ys = y2 - y1;
-    xs *= xs;
-    ys *= ys;
-    return Math.sqrt(xs + ys);
-  }
 
 prepareCanvas();
 
@@ -145,18 +135,6 @@ function showDeleteBtn(options) {
 function hideDeleteBtn(options) {
     var deleteBtn = document.getElementsByClassName('delete-obj-btn')[0];
     deleteBtn.style.display = 'none';
-}
-
-// event listeners for canvas
-function addEventHandlers() {
-    global_canvas.on('mouse:down', function(options){ beginRectDraw(options) });
-    global_canvas.on('mouse:up', function(options){ finishRect(options) });
-    global_canvas.on('mouse:move', function(options){ drawRect(options) });
-    global_canvas.on('object:selected', function(options){ showDeleteBtn(options) } );
-    global_canvas.on('object:modified', function(options){ showDeleteBtn(options) } );
-    global_canvas.on('object:moving', function(options){ showDeleteBtn(options) } );
-    global_canvas.on('object:scaling', function(options){ showDeleteBtn(options) } );
-    global_canvas.on('object:rotated', function(options){ showDeleteBtn(options) } );
 }
 
 // method to categorize the objects
@@ -391,10 +369,23 @@ function saveObjectData() {
     })
 }
 
+// event listeners for canvas
+function addEventHandlers() {
+    global_canvas.on('mouse:down', function(options){ beginRectDraw(options) });
+    global_canvas.on('mouse:up', function(options){ finishRect(options) });
+    global_canvas.on('mouse:move', function(options){ drawRect(options) });
+    global_canvas.on('object:selected', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:modified', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:moving', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:scaling', function(options){ showDeleteBtn(options) } );
+    global_canvas.on('object:rotated', function(options){ showDeleteBtn(options) } );
+}
+
+// event listener to delete all objects on the screen
 document.getElementById("obj-delete").addEventListener("click", function(){
     var allObjects = global_canvas.getObjects();
-    while(allObjects.length != 0){
-        global_canvas.remove(allObjects[0]);
+    while(allObjects.length != 1){
+        global_canvas.remove(allObjects[1]);
     }
     hideDeleteBtn();
 })
@@ -417,7 +408,7 @@ document.getElementById('ref-width').addEventListener('keyup', function(){
     analyseObjects();
 });
 
-document.getElementById('ref-width').addEventListener('keyup', function(){
+document.getElementById('ref-height').addEventListener('keyup', function(){
     analyseObjects();    
 });
 },{"qs":3}],2:[function(require,module,exports){
