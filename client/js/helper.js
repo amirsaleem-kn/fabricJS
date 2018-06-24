@@ -73,15 +73,22 @@ function dataURLtoBlob(dataurl) {
 
 // method to upload canvas generated image to google cloud
 function getPublicUrl() {
+    // return a promise
     return new Promise(function(resolve, reject){
-      var imgData = generateCanvasImage(canvas)
+      // convert canvas data to base64;
+      var imgData = generateCanvasImage(canvas);
+      // remove 'data:image/png;base64,' from the output
       var strDataURI = imgData.substr(22, imgData.length);
+      // convert base64 data to a blob
       var blob = dataURLtoBlob(imgData);
+      // create object url from blob
       var objurl = URL.createObjectURL(blob);
+      // prepare the form data
       var formData = new FormData();
       formData.append("tag","editedImages");
       formData.append("empID",localStorage.empID);
       formData.append("filename",blob,'file.png');
+      // resolve the promise
       resolve(formData);
     });
   }

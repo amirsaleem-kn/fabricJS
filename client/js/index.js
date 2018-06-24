@@ -88,7 +88,7 @@ function beginRectDraw(options) {
 }
 
 /**
- * Function to draw react on mousemove
+ * Function to draw rectangle on mousemove
  * @param {options} options 
  */
 
@@ -123,6 +123,7 @@ function finishRect() {
     }
 }
 
+// show delete button inside the selected object
 function showDeleteBtn(options) {
     var deleteBtn = document.getElementsByClassName('delete-obj-btn')[0];
     var selected = global_canvas.getActiveObject();
@@ -131,6 +132,7 @@ function showDeleteBtn(options) {
     deleteBtn.style.left = selected.left + 10 + 'px';
 }
 
+// hide the delete button from view
 function hideDeleteBtn(options) {
     var deleteBtn = document.getElementsByClassName('delete-obj-btn')[0];
     deleteBtn.style.display = 'none';
@@ -180,7 +182,7 @@ function analyseObjects() {
                 break;
             }
         }
-        // if object did not fall in any category criteria
+        // if object did not fall in any category criteria above
         if(!found){
             // add it to the super category
             totalSum += objectSide;
@@ -194,17 +196,25 @@ function analyseObjects() {
     }
     // update the countInPercentage and weightInPercentage for category array
     local_category_array.forEach(function(aCategory, aCategoryIndex){
+        // this is the percentage
         aCategory['countInPercentage'] = (parseFloat(aCategory['count']*100)/totalObjects-1);
+        // does the value contains floating point numbers?
         if(Math.round(aCategory['countInPercentage']) !== aCategory['countInPercentage']){
+            // fix the number of digits after decimal to 2
             aCategory['countInPercentage'] = (aCategory['countInPercentage']).toFixed(2);
         }
+        // if got some weird value like NaN, undefined, infinity or null, make it 0
         if(isNaN(aCategory['percentage'])){
             aCategory['percentage'] = 0;
         }
-        aCategory['sumInPercentage'] = ( parseFloat(aCategory['sum']*100 / parseFloat(totalSum)) )
+        // this is the weight in percentage
+        aCategory['sumInPercentage'] = ( parseFloat(aCategory['sum']*100 / parseFloat(totalSum)) );
+        // does the value contains floating point numbers?
         if(Math.round(aCategory['sumInPercentage']) !== aCategory['sumInPercentage']){
+            // fix the number of digits after decimal to 2
             aCategory['sumInPercentage'] = (aCategory['sumInPercentage']).toFixed(2);
         }
+        // if got some weird value like NaN, null, undefined or infinity, make it 0
         if(isNaN(aCategory['sumInPercentage'])){
             aCategory['sumInPercentage'] = 0;
         }
@@ -224,6 +234,7 @@ function getObjectData() {
         global_category_array = data.helper.categoryArray;
         var pixelValueInMM = data.helper.pixelValueInMM || 0.885;
         // create a referenceObject
+        // if reference object is not detected by automated algo function, place the reference object in bottom right corner
         if(data.helper.referenceObject == null){
             var refDimensions = {};
             refDimensions.width = 196;
@@ -238,6 +249,7 @@ function getObjectData() {
             document.getElementById('ref-height').value = (refDimensions.height * pixelValueInMM);
             addRect(refDimensions);
         } else {
+            // reference object got detected in automated algo function, place it where it should be
             var referenceObject = data.helper.referenceObject;
             var refDimensions = getDimensionsWithAngle({
                 x1: referenceObject[0].x,
@@ -277,6 +289,7 @@ function getObjectData() {
             dimensions.strokeWidth = 2;
             addRect(dimensions);
         });
+        // after successfull render of objects, categorise them
         analyseObjects();
     });
 }
@@ -284,10 +297,13 @@ function getObjectData() {
 //method to calculate pixel value in mm
 function getPixelValueInMM() {
     var refObject = global_canvas.getObjects()[0]['aCoords'];
+    // get reference object height and width in pixel
     var refObjWidthInPx = (getDistance(refObject['tl']['x'], refObject['tl']['y'], refObject['tr']['x'], refObject['tr']['y']));
     var refObjHeightInPx = (getDistance(refObject['tr']['x'], refObject['tr']['y'], refObject['br']['x'], refObject['br']['y']));
+    // get reference object height and width in mm (this is given by user or automated algorithm)
     var refObjWidthInMM = document.getElementById('ref-width').value;
     var refObjHeightInMM = document.getElementById('ref-height').value;
+    // calculate one pixel translates to how many MM in real life
     var pixelValueInMM = (((parseFloat(refObjWidthInMM) + parseFloat(refObjHeightInMM)) / 2) / ((parseFloat(refObjWidthInPx) + parseFloat(refObjHeightInPx)) / 2 )).toFixed(3);
     return pixelValueInMM;
 }
@@ -305,11 +321,13 @@ function saveObjectData() {
     // loop through the objects and store their coordinates
     for(var i = 0; i < totalObjects; i++){
         // ignore first object, as first object is always reference object
+        // store reference object's coordinates
         if(i == 0){
             anObject = global_canvas.getObjects()[i]['aCoords'];
             referenceObject.push(anObject.tl.x, anObject.tl.y, anObject.tr.x, anObject.tr.y, anObject.br.x, anObject.br.y, anObject.bl.x, anObject.bl.y);
-            continue;
+            continue; // no further execution for this iteration (skip this iteration)
         }
+        // prepare object level data
         anObject = global_canvas.getObjects()[i]['aCoords'];
         objTopLeftX.push(anObject.tl.x);
         objTopRightX.push(anObject.tr.x);
