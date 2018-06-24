@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Fabric JS</title>
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="/client/css/index.css">
 </head>
+<script type = 'text/javascript'>
+    var baseUrl = '{{basrUrl}}';
+</script>
 <body>
 
     <div class = 'toolbar'>
@@ -18,10 +21,10 @@
     </div>
     <div class = 'canvas-container'>
         <canvas id = 'my-canvas'></canvas>
-        <span class = 'delete-obj-btn'><img src = 'trash.png'/></span>
+        <span class = 'delete-obj-btn'><img src = '/client/images/trash.png'/></span>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.7.22/fabric.min.js"></script>
-    <script src = 'helper.js'></script>
-    <script src="index.js"></script>
+    <script src = '/client/js/helper.js'></script>
+    <script src="/client/js/index.js"></script>
 </body>
 </html>

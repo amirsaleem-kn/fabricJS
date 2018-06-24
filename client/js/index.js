@@ -37,7 +37,7 @@ prepareCanvas();
 function prepareCanvas() {
     // set the target image
     global_target_image = new Image();
-    global_target_image.src = 'potato_kufri_bahar_2.jpeg';
+    global_target_image.src = '/client/images/potato_kufri_bahar_2.jpeg';
 
     // as soon as the image is loaded, prepare the canvas
     global_target_image.onload = function() {
