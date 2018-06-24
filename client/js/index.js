@@ -30,19 +30,6 @@ var global_started = false;
 var global_x = 0, global_y = 0;
 var global_category_array = [];
 
-function getQueryString(key){
-    return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
-}
-
-// get distance between two points
-function getDistance(x1, y1, x2, y2) {
-    var xs = x2 - x1;
-    var ys = y2 - y1;
-    xs *= xs;
-    ys *= ys;
-    return Math.sqrt(xs + ys);
-  }
-
 prepareCanvas();
 
 function prepareCanvas() {

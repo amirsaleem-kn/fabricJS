@@ -40,3 +40,17 @@ var getDimensionsWithAngle = function(coords) {
     return coords;
     
 }
+
+// get value from a query string (url path)
+function getQueryString(key){
+    return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+}
+
+// get distance between two points
+function getDistance(x1, y1, x2, y2) {
+    var xs = x2 - x1;
+    var ys = y2 - y1;
+    xs *= xs;
+    ys *= ys;
+    return Math.sqrt(xs + ys);
+}
