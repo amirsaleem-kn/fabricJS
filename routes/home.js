@@ -5,7 +5,7 @@ module.exports = function(settings){
     var baseUrl = config.baseUrl;
     app.get('/', function(req, res){
         res.render('index', {
-            baseUrl: baseUrl
+            baseURL: baseUrl
         });
     });
 

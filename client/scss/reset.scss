@@ -1,0 +1,69 @@
+@import "primary-colors";
+* {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*:before,
+*:after {
+  margin: 0;
+  padding: 0;
+}
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-size: 16px;
+  font-weight: 400;
+  width: 100%;
+  height: 100%;
+  font-family: 'Quicksand', sans-serif;
+  //-webkit-font-smoothing: antialiased;
+  background: $kn-primary-color;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+}
+
+input,
+select {
+  font-size: 14px;
+  padding: 5px 5px;
+  border: 1px solid $kn-primary-color;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none;
+}
+div,
+header,
+footer,
+section,
+aside,
+article,
+nav {
+  position: relative;
+}
+input[type="file"]{
+  border: 1px solid #ccc;
+}
+
+input[type="radio"]{
+  cursor: pointer;
+}

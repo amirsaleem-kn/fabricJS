@@ -1,0 +1,135 @@
+@import "primary-colors";
+.theme-table {
+  width: 100%;
+  table-layout: fixed;
+  word-wrap:break-word;
+  border-collapse: collapse;
+  empty-cells: hide;
+  tr {
+    th,td {
+      border-left: 1px solid rgb(204, 204, 204);
+      border-right: 1px solid rgb(204, 204, 204);
+      border-top: 1px solid rgb(204, 204, 204);
+      border-bottom: 1px solid rgb(204, 204, 204);
+      padding: 10px 5px;
+      text-align: center;
+      font-size: 12px;
+      color: $extra-dark-text;
+      i {
+        cursor: pointer;
+        margin-left: 5px;
+      }
+    }
+    th {
+      background-color: $kn-green;
+      color: $light-text;
+      text-overflow: ellipsis;
+    }
+    td {
+      font-weight: 400;
+      overflow: hidden;
+      padding: 8px 5px;
+      text-overflow: ellipsis;
+
+      .small-bullet {
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-width: 10px;
+        border-style: solid;
+      }
+    }
+  }
+  tr:nth-child(even){
+    background-color: $kn-primary-color;
+    border-bottom: 1px solid $kn-gray;
+  }
+  tr:nth-child(odd){
+    background-color: $kn-gray;
+    border-bottom: 1px solid $kn-primary-color;
+  }
+}
+
+.kn-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  word-wrap:break-word;
+   tr {
+     th,td {
+       font-size: 12px;
+       border: 1px solid #ccc;
+       padding: 10px 10px;
+       vertical-align: top;
+     }
+     th {
+
+     }
+     td {
+       img {
+         max-width: 150px;
+       }
+       input,select {
+         width: 100%;
+         border: 1px solid #ccc;
+         background: white;
+         border-radius: 0;
+         padding: 5px;
+         font-size: 12px;
+       }
+       select {
+         -webkit-appearance: none
+       }
+     }
+     &:nth-child(odd) {
+       td {
+         background: $kn-gray;
+       }
+     }
+   }
+}
+
+.key-value-table {
+  border-collapse: collapse;
+  tr {
+    th,td {
+      border-bottom: 1px solid $kn-gray;
+      padding: 5px 5px;
+      font-size: 12px;
+    }
+    th {
+
+    }
+    td {
+      padding-left: 10px;
+    }
+  }
+}
+
+.two-column-table {
+  border-collapse: collapse;
+  width: 100%;
+  tr {
+    th,td {
+      border-bottom: 1px solid $kn-gray;
+      padding: 10px 5px;
+      font-size: 14px;
+    }
+    th {
+
+    }
+    td {
+      padding-left: 10px;
+    }
+  }
+}
+
+.table-secondary {
+  width: auto;
+  th {
+    background: $kn-gray;
+  }
+  td {
+    background: white;
+  }
+}

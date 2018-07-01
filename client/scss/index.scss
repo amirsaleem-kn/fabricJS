@@ -1,0 +1,141 @@
+// import all necessary modules
+@import "primary-colors";
+@import "mixins";
+@import "reset";
+@import "reusable";
+@import "buttons";
+@import "table";
+@import "typography";
+
+body {
+  background-image: url('https://www.transparenttextures.com/patterns/grid-me.png');
+  background-color: rgb(245, 245, 245);
+}
+
+div {
+    position: relative;
+}
+
+.canvas-container {
+    position: relative;
+    margin: 0 0 0 0;
+}
+
+.delete-individual-obj-btn {
+    position: absolute;
+    display: none;
+    padding: 2px 2px;
+    top: 200px;
+    left: 200px;
+    cursor: pointer;
+    background: white;
+    img {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+.checkbox-wrapper {
+  float: right;
+  label {
+    font-size: 14px;
+    font-weight: 400;
+    margin-right: 10px;
+    margin-top: 6px;
+  }
+}
+
+.toolbar-bar {
+    position: fixed;
+    padding: 10px;
+    top: 0;
+    width: 100%;
+    background: $kn-primary-color;
+    z-index: 30;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+    .dimension-wrapper {
+      float: left;
+      .dimension-holder {
+        float: left;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        overflow: hidden;
+        //border: 1px solid #ccc;
+        p {
+          display: inline-block;
+          font-size: 14px;
+          padding: 7px 5px 6px 5px;
+          background: $kn-highlighted;
+          color: $light-text;
+        }
+        input {
+          padding: 5px;
+          &:focus {
+            .dimension-holder {
+              box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+            }
+          }
+        }
+        span.outer-span {
+          display: inline-block;
+          background: $positive-green;
+          color: $light-text;
+          padding: 5px 5px 6px 5px;
+        }
+        &:nth-child(even) {
+          margin-left: 10px;
+        }
+      }
+    }
+}
+
+.object-wise-data-wrapper {
+    display: block;
+    position: fixed;
+    top: 56px;
+    right: 0;
+    z-index: 20;
+    height: 100%;
+    width: 300px;
+    background: white;
+    h1 {
+      text-align: center;
+      font-size: 18px;
+      padding: 10px;
+      background: $kn-green;
+      color: white;
+      #refresh-btn {
+        cursor: pointer;
+        margin-left: 10px;
+        @include easing(0.4s, ease, 0s);
+        &:hover {
+          @include animate(rotateobj infinite 1s ease 0s);
+        }
+      }
+    }
+    .category-card {
+      p {
+        padding: 10px 10px 10px 15px;
+        font-size: 14px;
+        border-bottom: 1px solid #ccc;
+        cursor: default;
+        &:hover {
+          background: rgb(240, 239, 239);
+        }
+      }
+      table {
+        margin-top: 5px;
+        tr {
+          th {
+            font-weight: 700;
+          }
+         th,td {
+           padding: 5px;
+           border: 1px solid #ccc;
+           font-size: 12px;
+         } 
+        }
+      }
+    }
+  }

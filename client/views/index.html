@@ -5,27 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Fabric JS</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="/client/css/index.css">
 </head>
 <script type = 'text/javascript'>
-    var baseUrl = '{{basrUrl}}';
+    var baseURL = 'https://kisan-network-api-test.appspot.com';
 </script>
 <body>
 
-    <div class = 'toolbar'>
-        <input type="text" id = 'ref-width' value = '0'/>
-        <input type="text" id = 'ref-height' value = '0'/>
-        <button id = 'obj-delete'>Delete Objects</button>
-        <button id = 'serialize-data'>Save Data</button>
+    <div class = 'col-md-12 row'>
+        <div class = 'toolbar-bar clearfix'>
+            <div class = 'dimension-wrapper'>
+                <div class = 'dimension-holder'>
+                <p>Ref Object Width</p>
+                <input type="text" id = 'ref-width' value = '0'/>
+                    <span class = 'outer-span'><span id = "ref-width-in-px">0</span>px</span>
+                </div>
+                <div class = 'dimension-holder'>
+                    <p>Ref Object Height</p>
+                    <input type="text" id = 'ref-height' value = '0'/>
+                    <span class = 'outer-span'><span id = "ref-height-in-px">0</span>px</span>      
+                </div>
+            </div>
+            <button class = 'theme-btn theme-btn--highlighted theme-btn--small align-right' style = 'margin-right: 10px;' id = 'serialize-data'>Save Data</button>
+            <button class = 'theme-btn theme-btn--primary theme-btn--small align-right' style = 'margin-right: 10px;' id = 'show-details-btn'>Show Details</button>
+            <button class = 'theme-btn theme-btn--danger theme-btn--small align-right' style = 'margin-right: 10px;' id = 'obj-delete'>Delete Objects</button>
+            <div class = 'checkbox-wrapper'>
+                <input type="checkbox" id = 'send-whatsapp'>
+                <label for="send-whatsapp">Send whatsapp when saved</label>
+            </div>
+        </div>
+        <div class = 'canvas-container clearfix'>
+            <canvas id = 'my-canvas'></canvas>
+            <span class = 'delete-individual-obj-btn'><img src = '/static/build/img/trash.png'/></span>
+        </div>
+        <div class = 'object-wise-data-wrapper' style = 'display: none;'>
+            <h1>Objects: <span id = 'object-count'></span><span id = 'refresh-btn'><i class = 'fa fa-refresh'></i></span></h1>
+            <div class = 'category-card'>
+                <p><strong>Very Small (0mm-25mm):</strong> <span class = 'category-value zero'></span></p>
+                <p><strong>Small (25mm-45mm):</strong> <span class = 'category-value one'></span></p>
+                <p><strong>Normal (45mm-60mm):</strong> <span class = 'category-value two'></span></p>
+                <p><strong>Big (60mm-80mm):</strong> <span class = 'category-value three'></span></p>
+                <p><strong>Super (80mm and above):</strong> <span class = 'category-value four'></span></p>
+            </div>
+        </div>    
     </div>
-    <div class = 'canvas-container'>
-        <canvas id = 'my-canvas'></canvas>
-        <span class = 'delete-obj-btn'><img src = '/client/images/trash.png'/></span>
+    <div class="fixed-transparent-bg fixed-transparent-bg--light" id="full-page-loader">        
+        <img src="https://460y9n2tqq4f2sqd5m2yn9lc-wpengine.netdna-ssl.com/wp-content/themes/starterv2/assets/images/ajax-loader.gif" alt="ajax-loader">
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.7.22/fabric.min.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src = '/client/js/request.js'></script>
-    <script src = '/client/js/helper.js'></script>
-    <script src="/client/js/bundle.js"></script>
+    <script src="/client/js/index.js"></script>
 </body>
 </html>

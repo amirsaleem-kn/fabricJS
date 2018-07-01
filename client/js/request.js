@@ -1,118 +1,301 @@
-/**
- * @description this file contains wrapper for making ajax request in axios with 401 authentication
- * Other function needs to call the request method with object as a parameter
-*/
-
-//const baseURL = baseURL;
-var authTokenRequest;
+var queue = [];
+var lock = "0";
+var pendingRequests = [];
+var pendingUrl = [];
+var testFunction= null;
 
 /**
- * @description axios instance for ajax requests
-*/
+ * Wrapper for ajax post request
+ * @param  {String} url             request url
+ * @param  {object} headers         request headers
+ * @param  {object} data            data to be sent
+ * @param  {function} successCallback function to be executed on request success
+ * @param  {function} failCallback    function to be executed on request fail
+ * @param  {boolean} processData     set this to true when passing data as an object
+ * @param  {boolean} async           set this to true when making synchronous request
+ * @param  {object} scopeTest       reference object if any to be accessed in the callback
+ */
+var postRequest = function(url,headers,data,successCallback,failCallback,processData,async,scopeTest, contentType, cache, beforeSend, complete){
+    var argumentsArray = Array.from(arguments);
+    var fun = arguments.callee;
+    var insert = true;
+    for(var i=0; i < queue.length; i++ ){
+         if(queue[i]["url"]==(url+JSON.stringify(data))){
+            insert = false;
 
-var client = axios.create({
-  baseURL: 'http://kisan-network-api-test.appspot.com',
-  headers: {
-        appID: 8,
-        version: "1.1.0",
-        empID: 'EI201700050',
-        token: localStorage.getItem('accessToken')
+            console.info("clash: "+url+JSON.stringify(data));
+            debugger;
+            return
+        }
     }
-});
+    if(insert){
+        queue.push({
+            url: url+JSON.stringify(data),
+            a: argumentsArray,
+            b: fun
+        });
+    }
+    testFunction = successCallback;
+    var newCallback = (function(url) {
+        var cached_function = testFunction;
+        return function() {
+            for(var i=0; i< queue.length; i++){
+                if(queue[i]["url"]==(url+JSON.stringify(data))){
+                    queue.splice(i,1);
+                }
+            }
+            var result = cached_function.apply(this, arguments); // use .apply() to call it
+
+            // more of your code
+
+            return result;
+        };
+    })(url);
+
+    var testRequest = $.ajax({
+            method: "POST",
+            url: url,
+            contentType : contentType,
+            cache : cache,
+            headers: {
+                //Content-Type : "application/x-www-form-urlencoded",
+                appID: "8",
+                version: "3",
+                empID: localStorage.empID,
+                token: localStorage.accessToken
+            },
+            data: data,
+            scopeTest: scopeTest,
+            processData: processData,
+            beforeSend : beforeSend,
+            complete : complete,
+            success: newCallback,
+            error: onRequestFailure,
+            async: async
+        });
+      pendingRequests.push(testRequest);
+      pendingUrl.push(url)
+};
+
+var postRequestWithExceptionHandling = function(url,headers,data,successCallback,failCallback,processData,async,scopeTest, contentType, cache, beforeSend, complete){
+    var argumentsArray = Array.from(arguments);
+    var fun = arguments.callee;
+    var insert = true;
+    for(var i=0; i < queue.length; i++ ){
+         if(queue[i]["url"]==(url+JSON.stringify(data))){
+            insert = false;
+
+            console.info("clash: "+url+JSON.stringify(data));
+            debugger;
+            return
+        }
+    }
+    if(insert){
+        queue.push({
+            url: url+JSON.stringify(data),
+            a: argumentsArray,
+            b: fun
+        });
+    }
+    testFunction = successCallback;
+    var newCallback = (function(url) {
+        var cached_function = testFunction;
+        return function() {
+            for(var i=0; i< queue.length; i++){
+                if(queue[i]["url"]==(url+JSON.stringify(data))){
+                    queue.splice(i,1);
+                }
+            }
+            var result = cached_function.apply(this, arguments); // use .apply() to call it
+
+            // more of your code
+
+            return result;
+        };
+    })(url);
+
+    var testRequest = $.ajax({
+            method: "POST",
+            url: url,
+            contentType : contentType,
+            cache : cache,
+            headers: {
+                //Content-Type : "application/x-www-form-urlencoded",
+                appID: "8",
+                version: "3",
+                empID: localStorage.empID,
+                token: localStorage.accessToken
+            },
+            data: data,
+            scopeTest: scopeTest,
+            processData: processData,
+            beforeSend : beforeSend,
+            complete : complete,
+            success: newCallback,
+            error: function(res){
+                console.log('OOPS FAILED');
+                if(res.status===401 || res.status==='401'){
+                    if(lock==="0"){
+                        lock = "1";
+                        pendingRequests.forEach(function(anItem){
+                            anItem.abort();
+                        })
+                        pendingRequests = [];
+                        pendingUrl =[];
+                        postRequest("/sign-in", null, {userName: localStorage.userName, password: localStorage.password}, function(res){
+                        lock = "0"
+                        if(res.status=="success"){
+                            localStorage.accessToken = res.data.accessToken;
+                            if(res.data.features)
+                                localStorage.featureArray = JSON.stringify(res.data.features);
+                            var emptyingQueue = queue;
+                            emptyingQueue.reverse();
+                            queue= [];
+                            for(var i= emptyingQueue.length-1; i>-1; i--){
+                                var temp = emptyingQueue[i];
+                                emptyingQueue.pop();
+                                temp["b"].apply(this, temp["a"]);
+                            }
+                        }
+                        else{
+                            window.location = "/logout"
+                            }
+                        }, function(res){
+                            lock = "0";
+                                window.location = "/logout"
+                        },true,null)
+                    }
+                }
+                else if(res.status==403){
+                    window.location = "/logout";
+                } else {
+                    var emptyingQueue = queue;
+                    emptyingQueue.reverse();
+                    queue= [];
+                    for(var i= emptyingQueue.length-1; i>-1; i--){
+                        var temp = emptyingQueue[i];
+                        emptyingQueue.pop();
+                    }
+                    failCallback();
+                }
+            },
+            async: async
+        });
+      pendingRequests.push(testRequest);
+      pendingUrl.push(url)
+};
 
 /**
- * @description this method calls a requestNewToken method to issue a new toke to the client
-*/
+ * Wrapper for ajax get request
+ * @param  {String}   url                  request url
+ * @param  {object}   parameters           request parameters
+ * @param  {Function} callback             function to be invoked on request success
+ * @param  {object}   additionalParameters reference object if any to be accessed in the callback
+ */
+var getRequest = function(url,parameters,callback, beforeSend, complete){
+    var argumentsArray = Array.from(arguments);
+    var fun = arguments.callee;
+    var insert = true;
+    for(var i=0; i < queue.length; i++ ){
+        if(queue[i]["url"]==(url+JSON.stringify(parameters))){
+            insert = false;
+            console.info("clash: "+url)
+            //queue.splice(i,1);
+            return
+        }
+    }
+    if(insert){
+       var obj = {
+         url: url + JSON.stringify(parameters),
+         a: argumentsArray,
+         b: fun
+       }
+       queue.push(obj);
+    }
+    testFunction = callback;
+    var newCallback = (function(url) {
+            var cached_function = testFunction;
+            return function() {
+                for(var i=0; i< queue.length; i++){
+                    if(queue[i]["url"]== (url+JSON.stringify(parameters))){
+                        //console.log("success callback. Removing form the queue")
+                        //console.log(queue[i]["url"])
+                        queue.splice(i,1);
+                    }
+                }
+                var result = cached_function.apply(this, arguments); // use .apply() to call it
 
-function getAuthToken() {
-  if (!authTokenRequest) {
-    authTokenRequest = requestNewToken();
-    authTokenRequest.then(resetAuthTokenRequest, resetAuthTokenRequest);
-  }
-  return authTokenRequest;
+                // more of your code
+
+                return result;
+            };
+        })(url);
+
+      var testRequest =  $.ajax({
+                            method: "GET",
+                            url: url,
+                            data: parameters,
+                            headers: {
+                                appID: "8",
+                                version: "3",
+                                empID: localStorage.empID,
+                                token: localStorage.accessToken
+                            },
+                            beforeSend: beforeSend,
+                            complete: complete,
+                            success: newCallback,
+                            error: onRequestFailure
+                        });
+      pendingRequests.push(testRequest);
+      pendingUrl.push(url)
+    }
+
+/**
+ * function be called on request failure
+ * @param  {object} res ajax response object
+ */
+function onRequestFailure(res){
+    console.log('OOPS FAILED');
+    if(res.status===401 || res.status==='401'){
+        if(lock==="0"){
+            lock = "1";
+            pendingRequests.forEach(function(anItem){
+                anItem.abort();
+            })
+            pendingRequests = [];
+            pendingUrl =[];
+            postRequest("/sign-in", null, {userName: localStorage.userName, password: localStorage.password}, function(res){
+            lock = "0"
+            if(res.status=="success"){
+                localStorage.accessToken = res.data.accessToken;
+                if(res.data.features)
+                    localStorage.featureArray = JSON.stringify(res.data.features);
+                //console.log("Inside accessToken referesh.");
+                var emptyingQueue = queue;
+                emptyingQueue.reverse();
+                queue= [];
+                for(var i= emptyingQueue.length-1; i>-1; i--){
+                    var temp = emptyingQueue[i];
+                    emptyingQueue.pop();
+                    temp["b"].apply(this, temp["a"]);
+                }
+            }
+            else{
+                window.location = "/logout"
+                }
+            }, function(res){
+                lock = "0";
+                    window.location = "/logout"
+            },true,null)
+        }
+    }
+    else if(res.status==403){
+        window.location = "/logout";
+    }
 }
 
-/**
- * @description this method requests the server to issue a new token, the server response is updated in local storage accessToken
-*/
-
-function requestNewToken() {
-  var newToken = request({
-    method: "post",
-    url: '/sign-in',
-    data: qs.stringify({"userName":localStorage.getItem('userName'),"password":localStorage.getItem('password')})
-  }).then((res)=>{
-    // on successfull response of new token, update the token in local storage
-    if(res.status == "success"){
-      localStorage.setItem('accessToken',res.data.accessToken);
-      //if featureArray is present in response object, update the featureArray in local storage
-      if(res.data.features){
-        localStorage.setItem('featureArray',JSON.stringify(res.data.features));
-      }
-    } else {
-      window.location = "/logout";
+function printObjectArray(anArray){
+    for(var i=0; i< anArray.length; i++){
+       console.log(anArray[i]["a"])
     }
-  });
-  return newToken;
-}
-
-function resetAuthTokenRequest() {
-  authTokenRequest = null;
-}
-
-/**
-* @description if any of the API gets 401 status code, this method calls getAuthToken method to renew accessToken
-* updates the error configuration and retries all failed requests again
-*/
-
-client.interceptors.response.use(function(res){
-  return res
-}, function(err) {
-  var errorMessage = err.toString();
-  const error = err.response;
-  // in case of 502 error redirect to maintainance page.
-  if(err.request.status === 502){
-     window.location = "/maintainance";
-  }
-  // if error is 401
-  if (error.status===401 && error.config && !error.config.__isRetryRequest) {
-    // request for a new token
-
-    return getAuthToken().then(response => {
-      // update the error config with new token
-      error.config.__isRetryRequest = true;
-      error.config.headers.token= localStorage.getItem("accessToken");
-      return client(error.config);
-    });
-  }
-  else if(error.status==403){
-      window.location = "/logout";
-  }
-});
-
-/**
-* @description wrapper for making ajax requests
-* @param {object} object with method,url,data etc.
-*/
-
-const request = function(options) {
-  const onSuccess = function(response) {
-    return response.data;
-  }
-  const onError = function(error) {
-    if (error.response) {
-      console.log('error response code is '+ error.code);
-      console.log(error.response);
-    } else {
-      console.log('error response code is '+ error.code);
-      console.log(error.message);
-    }
-
-    return Promise.reject(error.response || error.message);
-  }
-
-  return client(options)
-            .then(onSuccess)
-            .catch(onError);
-            options
 }

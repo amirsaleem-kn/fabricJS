@@ -1,0 +1,45 @@
+@mixin easing($duration, $timing ,$delay){
+
+  -webkit-transition: all $duration $timing $delay;
+  -moz-transition: all $duration $timing $delay;
+  -ms-transition: all $duration $timing $delay;
+  -o-transition: all $duration $timing $delay;
+  transition: all $duration $timing $delay;
+
+}
+
+@mixin sideBar($duration, $timing ,$delay){
+
+  -webkit-transition: left $duration $timing $delay;
+  -moz-transition: left $duration $timing $delay;
+  -ms-transition: left $duration $timing $delay;
+  -o-transition: left $duration $timing $delay;
+  transition: left $duration $timing $delay;
+
+}
+
+@mixin shadow($value){
+
+  -webkit-box-shadow: $value;
+  -moz-box-shadow: $value;
+  -o-box-shadow: $value;
+  -ms-box-shadow: $value;
+  box-shadow: $value;
+
+}
+
+@mixin trans($transform) {
+  -webkit-transform: $transform;
+  -moz-transform: $transform;
+  -ms-transform: $transform;
+  -o-transform: $transform;
+  transform: $transform;
+}
+
+@mixin animate($animation) {
+  -webkit-animation: $animation;
+  -moz-animation: $animation;
+  -webkit-animation: $animation;
+  -ms-animation: $animation;
+  animation: $animation;
+}
